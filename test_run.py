@@ -4,27 +4,28 @@ from torchvision.datasets import UCF101
 from torchvision import transforms
 from utils import visualize_moving_patches
 from timesformer_model import TimeSformer, initialize_weights
+import argparse
 
-def test_timesformer_with_visualization():
+def test_timesformer_with_visualization(args):
     """
     Test the TimeSformer with the UCF101 dataset and visualize moving patches.
     """
     
-    # Parameters
-    ucf_data_dir = "/kaggle/input/ucf101/UCF101/UCF-101"
-    ucf_label_dir = "/kaggle/input/ucf101/UCF101TrainTestSplits-RecognitionTask/ucfTrainTestlist"
-    frames_per_clip = 5
-    step_between_clips = 1
-    batch_size = 1  
-    num_workers = 4 
-    pin_memory = True  
-    patch_size = 16
-    dim = 512
-    depth = 2  
-    heads = 8
-    dim_head = 64
-    threshold = 0.5
-    max_run_length = 5
+    # Parameters (from argparse)
+    ucf_data_dir = args.ucf_data_dir
+    ucf_label_dir = args.ucf_label_dir
+    frames_per_clip = args.frames_per_clip
+    step_between_clips = args.step_between_clips
+    batch_size = args.batch_size
+    num_workers = args.num_workers
+    pin_memory = args.pin_memory
+    patch_size = args.patch_size
+    dim = args.dim
+    depth = args.depth
+    heads = args.heads
+    dim_head = args.dim_head
+    threshold = args.threshold
+    max_run_length = args.max_run_length
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Transformation pipeline
@@ -100,7 +101,24 @@ def test_timesformer_with_visualization():
     # Optionally visualize additional frames
     for f_idx in range(min(3, frames_per_clip - 1)):  # Visualize up to 3 frames
         visualize_moving_patches(video_tensor, mask, patch_size, threshold, frame_idx=f_idx)
-# Run the Test Function with Visualization
+
 if __name__ == "__main__":
-    test_timesformer_with_visualization()
-1
+    # Argument Parser
+    parser = argparse.ArgumentParser(description="Test TimeSformer model with visualization on UCF101 dataset.")
+    parser.add_argument("--ucf_data_dir", type=str, required=True, help="Path to the UCF101 video dataset.")
+    parser.add_argument("--ucf_label_dir", type=str, required=True, help="Path to the UCF101 label dataset.")
+    parser.add_argument("--frames_per_clip", type=int, default=5, help="Number of frames per clip.")
+    parser.add_argument("--step_between_clips", type=int, default=1, help="Step between clips.")
+    parser.add_argument("--batch_size", type=int, default=1, help="Batch size for DataLoader.")
+    parser.add_argument("--num_workers", type=int, default=4, help="Number of workers for DataLoader.")
+    parser.add_argument("--pin_memory", type=bool, default=True, help="Pin memory for DataLoader.")
+    parser.add_argument("--patch_size", type=int, default=16, help="Patch size for TimeSformer.")
+    parser.add_argument("--dim", type=int, default=512, help="Dimension of the model.")
+    parser.add_argument("--depth", type=int, default=2, help="Number of layers in TimeSformer.")
+    parser.add_argument("--heads", type=int, default=8, help="Number of attention heads.")
+    parser.add_argument("--dim_head", type=int, default=64, help="Dimension of each attention head.")
+    parser.add_argument("--threshold", type=float, default=0.5, help="Threshold for visualization.")
+    parser.add_argument("--max_run_length", type=int, default=5, help="Maximum run length for masking.")
+    
+    args = parser.parse_args()
+    test_timesformer_with_visualization(args)
